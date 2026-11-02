@@ -1,0 +1,42 @@
+name: Dump Offsets
+on: [workflow_dispatch]
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: Download Il2CppDumper
+        run: |
+          wget https://github.com/Perfare/Il2CppDumper/releases/download/v6.7.40/Il2CppDumper-linux-x64.zip
+          unzip Il2CppDumper-linux-x64.zip -d dumper
+          chmod +x dumper/Il2CppDumper
+
+      - name: Download Files from Release
+        run: |
+          # Tải các file đã có trong Release về máy ảo
+          # Thay [TÊN_TAG] bằng tag bạn đã đặt (ví dụ: v1.0)
+          wget https://github.com/[TÊN_USER_CỦA_BẠN]/ff-dump/releases/download/[TÊN_TAG]/UnityFramework.part_aa
+          wget https://github.com/[TÊN_USER_CỦA_BẠN]/ff-dump/releases/download/[TÊN_TAG]/UnityFramework.part_ab
+          wget https://github.com/[TÊN_USER_CỦA_BẠN]/ff-dump/releases/download/[TÊN_TAG]/UnityFramework.part_ac
+          wget https://github.com/[TÊN_USER_CỦA_BẠN]/ff-dump/releases/download/[TÊN_TAG]/global-metadata.dat
+
+      - name: Join Files
+        run: |
+          cat UnityFramework.part_* > UnityFramework
+
+      - name: Run Dump
+        run: |
+          ./dumper/Il2CppDumper UnityFramework global-metadata.dat output/
+
+      - name: Upload Dump
+        uses: actions/upload-artifact@v4
+        with:
+          name: dump-cs-file
+          path: output/dump.cs
+          overwrite: true
